@@ -41,11 +41,9 @@ const targetStack: Array<any> = [];
 export function pushStack(o: any) {
   targetStack.push(o);
   Dep.target = o;
-  console.log('pushStack: ', targetStack);
 }
 
 export function popStack() {
   targetStack.pop();
   Dep.target = targetStack[targetStack.length - 1];
-  console.log('popStack: ', targetStack);
 }

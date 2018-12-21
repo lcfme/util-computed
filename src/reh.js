@@ -30,13 +30,13 @@ function initComputed(ctx: Reh, opts: Object, cb?: Function) {
         cb ? cb.bind(opts) : undefined,
         true
       ));
+
       Object.defineProperty(opts.data, prop, {
         enumerable: true,
         configurable: true,
         set: util.noop,
-        get: watcher.get.bind(watcher)
+        get: opts.computed[prop].bind(opts)
       });
-      util.defineReactive(opts.data, prop);
     }
   }
 }

@@ -21,10 +21,10 @@ class Watcher {
   ) {
     this.getter = getter;
     this.cb = (a, b) => {
-      this.dirty = false;
       if (cb) {
         cb(a, b);
       }
+      this.dirty = false;
     };
     this.deps = {};
     this.id = $$watcher_count++;
@@ -33,7 +33,6 @@ class Watcher {
   }
   get() {
     pushStack(this);
-
     let val;
     try {
       val = this.getter();

@@ -168,13 +168,11 @@ var targetStack = [];
 function pushStack(o) {
   targetStack.push(o);
   Dep.target = o;
-  console.log('pushStack: ', targetStack);
 }
 
 function popStack() {
   targetStack.pop();
   Dep.target = targetStack[targetStack.length - 1];
-  console.log('popStack: ', targetStack);
 }
 
 /***/ }),
@@ -299,14 +297,13 @@ function initComputed(ctx, opts, cb) {
       }
 
       var watcher = ctx._computedWatchers[prop] = new _watcher2.default(opts.computed[prop].bind(opts), cb ? cb.bind(opts) : undefined, true);
-      var o = {};
-      Object.defineProperty(o, prop, {
-        enumerable: false,
+
+      Object.defineProperty(opts.data, prop, {
+        enumerable: true,
         configurable: true,
         set: util.noop,
-        get: watcher.get.bind(watcher)
+        get: opts.computed[prop].bind(opts)
       });
-      util.defineReactive(opts.data, prop, o[prop]);
     }
   }
 }
@@ -399,7 +396,6 @@ function defineReactive(obj, key, val) {
   if (property && property.configurable === false) {
     return;
   }
-
   var getter = property && property.get;
   var setter = property && property.set;
 
@@ -410,6 +406,7 @@ function defineReactive(obj, key, val) {
   var childOb = (0, _observe2.default)(val);
   Object.defineProperty(obj, key, {
     get: function get() {
+      console.log(key, getter);
       var value = getter ? getter.call(obj) : val;
 
       /**
@@ -500,7 +497,6 @@ var Watcher = function () {
     key: 'get',
     value: function get() {
       (0, _dep.pushStack)(this);
-
       var val = void 0;
       try {
         val = this.getter();
