@@ -14,24 +14,20 @@ class Watcher {
   value: any;
   id: number;
   callUpdateManually: boolean | void;
-  dirty: boolean = false;
+  dirty: boolean;
   constructor(
     getter: Function,
     cb?: (a?: any, b?: any) => any,
     callUpdateManually?: boolean
   ) {
     this.getter = getter;
-    this.cb = (a, b) => {
-      if (cb) {
-        cb(a, b);
-      }
-      this.dirty = false;
-    };
+    this.cb = cb;
     this.deps = {};
     this.newDeps = {};
     this.id = $$watcher_count++;
     this.callUpdateManually = callUpdateManually;
-    this.value = this.get();
+    this.dirty = !!callUpdateManually;
+    this.value = callUpdateManually ? undefined : this.get();
   }
   get() {
     pushStack(this);
@@ -47,18 +43,22 @@ class Watcher {
     return val;
   }
   update(force?: boolean) {
+    if (this.callUpdateManually) {
+      this.dirty = true;
+      return;
+    }
     const value = this.get();
     const oldValue = this.value;
     if (force === true || value !== this.value || util.isObject(value)) {
-      this.dirty = true;
-      if (
-        (force === true || (!this.callUpdateManually && force !== false)) &&
-        this.cb
-      ) {
+      if (force !== false && this.cb) {
         this.cb(value, oldValue);
       }
       this.value = value;
     }
+  }
+  evaluate() {
+    this.value = this.get();
+    this.dirty = false;
   }
   forceUpdate() {
     this.update(true);

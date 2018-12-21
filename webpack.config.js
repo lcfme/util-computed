@@ -4,7 +4,7 @@ const resolve = path.resolve.bind(path, __dirname);
 
 module.exports = env => {
   return {
-    entry: resolve('src/computed'),
+    entry: resolve('lib/index'),
     mode: env && env.production ? 'production' : 'development',
     output: {
       filename: 'wx-computed.js',

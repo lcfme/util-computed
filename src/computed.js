@@ -13,7 +13,11 @@ function initData(opts: any) {
   }
 }
 
-function initComputed(ctx: Computed, opts: Object, cb?: Function) {
+function initComputed(
+  ctx: Computed,
+  opts: Object,
+  cb?: (prop?: string, newVal?: any, oldVal?: any) => any
+) {
   if (util.isObject(opts) && util.isObject(opts.computed)) {
     for (let prop in opts.computed) {
       if (!util.isObject(opts.data)) {
@@ -32,11 +36,13 @@ function initComputed(ctx: Computed, opts: Object, cb?: Function) {
       ));
 
       function createComputedGetter() {
-        const val = watcher.get();
+        if (watcher.dirty) {
+          watcher.evaluate();
+        }
         if (Dep.target) {
           watcher.depend();
         }
-        return val;
+        return watcher.value;
       }
 
       Object.defineProperty(opts.data, prop, {
@@ -56,16 +62,19 @@ class Computed {
     initData(opts);
     initComputed(this, opts, cb);
   }
-  execDirtyWatcher() {
-    if (this._computedWatchers) {
-      const props = Object.keys(this._computedWatchers);
-      for (let i = 0, l = props.length; i < l; i++) {
-        const watcher = this._computedWatchers[props[i]];
-        if (watcher.dirty) {
-          watcher.forceUpdate();
-        }
+  getComputed(force?: boolean) {
+    var obj = {};
+    for (const prop in this._computedWatchers) {
+      const watcher = this._computedWatchers[prop];
+      if (force || watcher.dirty) {
+        watcher.evaluate();
+        const value = watcher.value;
+        Object.assign(obj, {
+          [prop]: value
+        });
       }
     }
+    return obj;
   }
 }
 

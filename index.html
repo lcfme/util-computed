@@ -12,6 +12,9 @@
           a: 1,
           b: 4
         },
+        onLoad() {
+          window.page = this;
+        },
         computed: {
           foo() {
             return this.data.a + this.data.b;
@@ -24,10 +27,23 @@
           }
         }
       };
-      Computed = Computed.default;
-      const computed = new Computed(o, function() {
-        console.log.apply(console, arguments);
-      });
+      function Page(pageConfig) {
+        if (!(this instanceof Page)) {
+          return new Page(pageConfig);
+        }
+        this.setData = obj => {
+          for (let key in obj) {
+            this.data[key] = obj[key];
+            console.log('setData ' + key);
+          }
+        };
+        this.data = pageConfig.data;
+        if (pageConfig.onLoad) {
+          pageConfig.onLoad.call(this, { initOpts: 1 });
+        }
+      }
+
+      Computed(Page)(o);
     </script>
   </head>
   <body></body>

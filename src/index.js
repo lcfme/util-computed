@@ -1,22 +1,25 @@
-// globalVar Page Component
+import Computed from './computed';
 
-import Instance from './computed';
-
-function Computed(PageFunction) {
+function ComputedPage(PageFunction) {
   return function(PageConfigObject = {}) {
+    let computed;
     const onLoad = PageConfigObject.onLoad;
     PageConfigObject.onLoad = function(opts) {
-      new Instance(PageConfigObject, (prop, val) => {
-        this.setData({
-          [prop]: val
-        });
-      });
+      computed = new Computed(PageConfigObject);
       const setData = this.setData.bind(this);
-      this.setData = function(obj = {}, cb) {
-        setData
-      }
+      this.setData = (obj = {}, cb) => {
+        setData(obj);
+        const computedData = computed.getComputed();
+        setData(computedData, (...args) => {
+          if (cb) {
+            cb.call(this, ...args);
+          }
+        });
+      };
+      onLoad.call(this, opts);
     };
+    PageFunction(PageConfigObject);
   };
 }
 
-export default Computed;
+export default ComputedPage;

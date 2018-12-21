@@ -91,10 +91,28 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = "./src/computed.js");
+/******/ 	return __webpack_require__(__webpack_require__.s = "./lib/index.js");
 /******/ })
 /************************************************************************/
 /******/ ({
+
+/***/ "./lib/index.js":
+/*!**********************!*\
+  !*** ./lib/index.js ***!
+  \**********************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+const Computed = __webpack_require__(/*! ../src */ "./src/index.js");
+
+module.exports = Computed.default;
+
+exports = module.exports;
+
+exports.default = module.exports;
+
+
+/***/ }),
 
 /***/ "./src/computed.js":
 /*!*************************!*\
@@ -132,11 +150,13 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function initData(opts) {
   if (util.isObject(opts) && util.isObject(opts.data)) {
-    for (var prop in opts.data) {
+    for (var _prop in opts.data) {
       (0, _observe2.default)(opts.data);
     }
   }
@@ -144,7 +164,7 @@ function initData(opts) {
 
 function initComputed(ctx, opts, cb) {
   if (util.isObject(opts) && util.isObject(opts.computed)) {
-    var _loop = function _loop(prop) {
+    var _loop = function _loop(_prop2) {
       if (!util.isObject(opts.data)) {
         opts.data = {};
       }
@@ -152,17 +172,19 @@ function initComputed(ctx, opts, cb) {
         ctx._computedWatchers = {};
       }
 
-      var watcher = ctx._computedWatchers[prop] = new _watcher3.default(opts.computed[prop].bind(opts), cb ? cb.bind(opts, prop) : undefined, true);
+      var watcher = ctx._computedWatchers[_prop2] = new _watcher3.default(opts.computed[_prop2].bind(opts), cb ? cb.bind(opts, _prop2) : undefined, true);
 
       function createComputedGetter() {
-        var val = watcher.get();
+        if (watcher.dirty) {
+          watcher.evaluate();
+        }
         if (_dep2.default.target) {
           watcher.depend();
         }
-        return val;
+        return watcher.value;
       }
 
-      Object.defineProperty(opts.data, prop, {
+      Object.defineProperty(opts.data, _prop2, {
         enumerable: true,
         configurable: true,
         set: util.noop,
@@ -170,8 +192,8 @@ function initComputed(ctx, opts, cb) {
       });
     };
 
-    for (var prop in opts.computed) {
-      _loop(prop);
+    for (var _prop2 in opts.computed) {
+      _loop(_prop2);
     }
   }
 }
@@ -185,17 +207,18 @@ var Computed = function () {
   }
 
   _createClass(Computed, [{
-    key: 'execDirtyWatcher',
-    value: function execDirtyWatcher() {
-      if (this._computedWatchers) {
-        var props = Object.keys(this._computedWatchers);
-        for (var i = 0, l = props.length; i < l; i++) {
-          var _watcher = this._computedWatchers[props[i]];
-          if (_watcher.dirty) {
-            _watcher.forceUpdate();
-          }
+    key: 'getComputed',
+    value: function getComputed(force) {
+      var obj = {};
+      for (var _prop3 in this._computedWatchers) {
+        var _watcher = this._computedWatchers[_prop3];
+        if (force || _watcher.dirty) {
+          _watcher.evaluate();
+          var value = _watcher.value;
+          Object.assign(obj, _defineProperty({}, _prop3, value));
         }
       }
+      return obj;
     }
   }]);
 
@@ -285,6 +308,63 @@ function popStack() {
   targetStack.pop();
   Dep.target = targetStack[targetStack.length - 1];
 }
+
+/***/ }),
+
+/***/ "./src/index.js":
+/*!**********************!*\
+  !*** ./src/index.js ***!
+  \**********************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _computed = __webpack_require__(/*! ./computed */ "./src/computed.js");
+
+var _computed2 = _interopRequireDefault(_computed);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function ComputedPage(PageFunction) {
+  return function () {
+    var PageConfigObject = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+    var computed = void 0;
+    var onLoad = PageConfigObject.onLoad;
+    PageConfigObject.onLoad = function (opts) {
+      var _this = this;
+
+      computed = new _computed2.default(PageConfigObject);
+      var setData = this.setData.bind(this);
+      this.setData = function () {
+        var obj = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+        var cb = arguments[1];
+
+        setData(obj);
+        var computedData = computed.getComputed();
+        setData(computedData, function () {
+          for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+            args[_key] = arguments[_key];
+          }
+
+          if (cb) {
+            cb.call.apply(cb, [_this].concat(args));
+          }
+        });
+      };
+      onLoad.call(this, opts);
+    };
+    PageFunction(PageConfigObject);
+  };
+}
+
+exports.default = ComputedPage;
 
 /***/ }),
 
@@ -485,24 +565,16 @@ var $$watcher_count = 0;
 
 var Watcher = function () {
   function Watcher(getter, cb, callUpdateManually) {
-    var _this = this;
-
     _classCallCheck(this, Watcher);
 
-    this.dirty = false;
-
     this.getter = getter;
-    this.cb = function (a, b) {
-      if (cb) {
-        cb(a, b);
-      }
-      _this.dirty = false;
-    };
+    this.cb = cb;
     this.deps = {};
     this.newDeps = {};
     this.id = $$watcher_count++;
     this.callUpdateManually = callUpdateManually;
-    this.value = this.get();
+    this.dirty = !!callUpdateManually;
+    this.value = callUpdateManually ? undefined : this.get();
   }
 
   _createClass(Watcher, [{
@@ -523,15 +595,24 @@ var Watcher = function () {
   }, {
     key: 'update',
     value: function update(force) {
+      if (this.callUpdateManually) {
+        this.dirty = true;
+        return;
+      }
       var value = this.get();
       var oldValue = this.value;
       if (force === true || value !== this.value || util.isObject(value)) {
-        this.dirty = true;
-        if ((force === true || !this.callUpdateManually && force !== false) && this.cb) {
+        if (force !== false && this.cb) {
           this.cb(value, oldValue);
         }
         this.value = value;
       }
+    }
+  }, {
+    key: 'evaluate',
+    value: function evaluate() {
+      this.value = this.get();
+      this.dirty = false;
     }
   }, {
     key: 'forceUpdate',
