@@ -13,7 +13,7 @@ function initData(opts: any) {
   }
 }
 
-function initComputed(ctx: Reh, opts: Object, cb?: Function) {
+function initComputed(ctx: Computed, opts: Object, cb?: Function) {
   if (util.isObject(opts) && util.isObject(opts.computed)) {
     for (let prop in opts.computed) {
       if (!util.isObject(opts.data)) {
@@ -27,7 +27,7 @@ function initComputed(ctx: Reh, opts: Object, cb?: Function) {
         prop
       ] = new Watcher(
         opts.computed[prop].bind(opts),
-        cb ? cb.bind(opts) : undefined,
+        cb ? cb.bind(opts, prop) : undefined,
         true
       ));
 
@@ -49,7 +49,7 @@ function initComputed(ctx: Reh, opts: Object, cb?: Function) {
   }
 }
 
-class Reh {
+class Computed {
   static util = util;
   _computedWatchers: { [k: string | number]: Watcher } | void;
   constructor(opts: any, cb?: Function) {
@@ -69,4 +69,4 @@ class Reh {
   }
 }
 
-export default Reh;
+export default Computed;

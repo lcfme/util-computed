@@ -1,21 +1,22 @@
 // globalVar Page Component
 
-import * as util from './util';
-import Reh from './reh';
+import Instance from './computed';
 
-const _Page = Page;
-
-Page = (pageConfig = {}) => {
-  const _onLoad = pageConfig.onLoad;
-  pageConfig.onLoad = function(opts) {
-    const reh = new Reh(this, (prop, val) => {
-      this.setData({
-        [prop]: val
+function Computed(PageFunction) {
+  return function(PageConfigObject = {}) {
+    const onLoad = PageConfigObject.onLoad;
+    PageConfigObject.onLoad = function(opts) {
+      new Instance(PageConfigObject, (prop, val) => {
+        this.setData({
+          [prop]: val
+        });
       });
-    });
-    const _setData = this.setData.bind(this);
-    this.setData = function(opts = {}, cb) {
-      
-    }
+      const setData = this.setData.bind(this);
+      this.setData = function(obj = {}, cb) {
+        setData
+      }
+    };
   };
-};
+}
+
+export default Computed;

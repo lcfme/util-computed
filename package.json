@@ -3,9 +3,9 @@
   "author": {
     "name": "laearon"
   },
-  "main": "out/reh.js",
+  "main": "out/wx-computed.js",
   "scripts": {
-    "build": "webpack --progress"
+    "build": "rm -rf out && webpack --progress"
   },
   "devDependencies": {
     "babel-core": "^6.26.3",

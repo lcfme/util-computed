@@ -4,9 +4,9 @@
 	else if(typeof define === 'function' && define.amd)
 		define([], factory);
 	else if(typeof exports === 'object')
-		exports["Reh"] = factory();
+		exports["Computed"] = factory();
 	else
-		root["Reh"] = factory();
+		root["Computed"] = factory();
 })(window, function() {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
@@ -91,10 +91,121 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = "./src/reh.js");
+/******/ 	return __webpack_require__(__webpack_require__.s = "./src/computed.js");
 /******/ })
 /************************************************************************/
 /******/ ({
+
+/***/ "./src/computed.js":
+/*!*************************!*\
+  !*** ./src/computed.js ***!
+  \*************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _util = __webpack_require__(/*! ./util */ "./src/util.js");
+
+var util = _interopRequireWildcard(_util);
+
+var _observe = __webpack_require__(/*! ./observe */ "./src/observe.js");
+
+var _observe2 = _interopRequireDefault(_observe);
+
+var _watcher2 = __webpack_require__(/*! ./watcher */ "./src/watcher.js");
+
+var _watcher3 = _interopRequireDefault(_watcher2);
+
+var _dep = __webpack_require__(/*! ./dep */ "./src/dep.js");
+
+var _dep2 = _interopRequireDefault(_dep);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function initData(opts) {
+  if (util.isObject(opts) && util.isObject(opts.data)) {
+    for (var prop in opts.data) {
+      (0, _observe2.default)(opts.data);
+    }
+  }
+}
+
+function initComputed(ctx, opts, cb) {
+  if (util.isObject(opts) && util.isObject(opts.computed)) {
+    var _loop = function _loop(prop) {
+      if (!util.isObject(opts.data)) {
+        opts.data = {};
+      }
+      if (!ctx._computedWatchers) {
+        ctx._computedWatchers = {};
+      }
+
+      var watcher = ctx._computedWatchers[prop] = new _watcher3.default(opts.computed[prop].bind(opts), cb ? cb.bind(opts, prop) : undefined, true);
+
+      function createComputedGetter() {
+        var val = watcher.get();
+        if (_dep2.default.target) {
+          watcher.depend();
+        }
+        return val;
+      }
+
+      Object.defineProperty(opts.data, prop, {
+        enumerable: true,
+        configurable: true,
+        set: util.noop,
+        get: createComputedGetter
+      });
+    };
+
+    for (var prop in opts.computed) {
+      _loop(prop);
+    }
+  }
+}
+
+var Computed = function () {
+  function Computed(opts, cb) {
+    _classCallCheck(this, Computed);
+
+    initData(opts);
+    initComputed(this, opts, cb);
+  }
+
+  _createClass(Computed, [{
+    key: 'execDirtyWatcher',
+    value: function execDirtyWatcher() {
+      if (this._computedWatchers) {
+        var props = Object.keys(this._computedWatchers);
+        for (var i = 0, l = props.length; i < l; i++) {
+          var _watcher = this._computedWatchers[props[i]];
+          if (_watcher.dirty) {
+            _watcher.forceUpdate();
+          }
+        }
+      }
+    }
+  }]);
+
+  return Computed;
+}();
+
+Computed.util = util;
+exports.default = Computed;
+
+/***/ }),
 
 /***/ "./src/dep.js":
 /*!********************!*\
@@ -237,117 +348,6 @@ var Observer = function () {
 }();
 
 exports.default = observe;
-
-/***/ }),
-
-/***/ "./src/reh.js":
-/*!********************!*\
-  !*** ./src/reh.js ***!
-  \********************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _util = __webpack_require__(/*! ./util */ "./src/util.js");
-
-var util = _interopRequireWildcard(_util);
-
-var _observe = __webpack_require__(/*! ./observe */ "./src/observe.js");
-
-var _observe2 = _interopRequireDefault(_observe);
-
-var _watcher2 = __webpack_require__(/*! ./watcher */ "./src/watcher.js");
-
-var _watcher3 = _interopRequireDefault(_watcher2);
-
-var _dep = __webpack_require__(/*! ./dep */ "./src/dep.js");
-
-var _dep2 = _interopRequireDefault(_dep);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function initData(opts) {
-  if (util.isObject(opts) && util.isObject(opts.data)) {
-    for (var prop in opts.data) {
-      (0, _observe2.default)(opts.data);
-    }
-  }
-}
-
-function initComputed(ctx, opts, cb) {
-  if (util.isObject(opts) && util.isObject(opts.computed)) {
-    var _loop = function _loop(prop) {
-      if (!util.isObject(opts.data)) {
-        opts.data = {};
-      }
-      if (!ctx._computedWatchers) {
-        ctx._computedWatchers = {};
-      }
-
-      var watcher = ctx._computedWatchers[prop] = new _watcher3.default(opts.computed[prop].bind(opts), cb ? cb.bind(opts) : undefined, true);
-
-      function createComputedGetter() {
-        var val = watcher.get();
-        if (_dep2.default.target) {
-          watcher.depend();
-        }
-        return val;
-      }
-
-      Object.defineProperty(opts.data, prop, {
-        enumerable: true,
-        configurable: true,
-        set: util.noop,
-        get: createComputedGetter
-      });
-    };
-
-    for (var prop in opts.computed) {
-      _loop(prop);
-    }
-  }
-}
-
-var Reh = function () {
-  function Reh(opts, cb) {
-    _classCallCheck(this, Reh);
-
-    initData(opts);
-    initComputed(this, opts, cb);
-  }
-
-  _createClass(Reh, [{
-    key: 'execDirtyWatcher',
-    value: function execDirtyWatcher() {
-      if (this._computedWatchers) {
-        var props = Object.keys(this._computedWatchers);
-        for (var i = 0, l = props.length; i < l; i++) {
-          var _watcher = this._computedWatchers[props[i]];
-          if (_watcher.dirty) {
-            _watcher.forceUpdate();
-          }
-        }
-      }
-    }
-  }]);
-
-  return Reh;
-}();
-
-Reh.util = util;
-exports.default = Reh;
 
 /***/ }),
 
@@ -577,4 +577,4 @@ exports.default = Watcher;
 
 /******/ });
 });
-//# sourceMappingURL=reh.js.map
+//# sourceMappingURL=wx-computed.js.map
