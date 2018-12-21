@@ -31,11 +31,19 @@ function initComputed(ctx: Reh, opts: Object, cb?: Function) {
         true
       ));
 
+      function createComputedGetter() {
+        const val = watcher.get();
+        if (Dep.target) {
+          watcher.depend();
+        }
+        return val;
+      }
+
       Object.defineProperty(opts.data, prop, {
         enumerable: true,
         configurable: true,
         set: util.noop,
-        get: opts.computed[prop].bind(opts)
+        get: createComputedGetter
       });
     }
   }

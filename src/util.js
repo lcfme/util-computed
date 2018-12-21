@@ -43,7 +43,6 @@ export function defineReactive(obj: Object, key: string | number, val?: any) {
   let childOb = observe(val);
   Object.defineProperty(obj, key, {
     get() {
-      console.log(key, getter);
       const value = getter ? getter.call(obj) : val;
 
       /**

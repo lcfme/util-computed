@@ -10,6 +10,7 @@ class Watcher {
   getter: () => any;
   cb: ((a?: any, b?: any) => void) | void;
   deps: { [k: string | number]: Dep };
+  newDeps: { [k: string | number]: Dep };
   value: any;
   id: number;
   callUpdateManually: boolean | void;
@@ -27,6 +28,7 @@ class Watcher {
       this.dirty = false;
     };
     this.deps = {};
+    this.newDeps = {};
     this.id = $$watcher_count++;
     this.callUpdateManually = callUpdateManually;
     this.value = this.get();
@@ -62,12 +64,20 @@ class Watcher {
     this.update(true);
   }
   cleanupDeps() {
-    this.deps = {};
+    for (const id in this.deps) {
+      if (!this.newDeps[id]) {
+        this.deps[id].removeSub(this);
+      }
+    }
+    this.deps = this.newDeps;
+    this.newDeps = {};
   }
   addDep(dep: Dep) {
-    if (!this.deps[dep.id]) {
-      this.deps[dep.id] = dep;
-      dep.addSub(this);
+    if (!this.newDeps[dep.id]) {
+      this.newDeps[dep.id] = dep;
+      if (!this.deps[dep.id]) {
+        dep.addSub(this);
+      }
     }
   }
   depend() {

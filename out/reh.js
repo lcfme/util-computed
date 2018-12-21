@@ -264,9 +264,9 @@ var _observe = __webpack_require__(/*! ./observe */ "./src/observe.js");
 
 var _observe2 = _interopRequireDefault(_observe);
 
-var _watcher = __webpack_require__(/*! ./watcher */ "./src/watcher.js");
+var _watcher2 = __webpack_require__(/*! ./watcher */ "./src/watcher.js");
 
-var _watcher2 = _interopRequireDefault(_watcher);
+var _watcher3 = _interopRequireDefault(_watcher2);
 
 var _dep = __webpack_require__(/*! ./dep */ "./src/dep.js");
 
@@ -288,7 +288,7 @@ function initData(opts) {
 
 function initComputed(ctx, opts, cb) {
   if (util.isObject(opts) && util.isObject(opts.computed)) {
-    for (var prop in opts.computed) {
+    var _loop = function _loop(prop) {
       if (!util.isObject(opts.data)) {
         opts.data = {};
       }
@@ -296,14 +296,26 @@ function initComputed(ctx, opts, cb) {
         ctx._computedWatchers = {};
       }
 
-      var watcher = ctx._computedWatchers[prop] = new _watcher2.default(opts.computed[prop].bind(opts), cb ? cb.bind(opts) : undefined, true);
+      var watcher = ctx._computedWatchers[prop] = new _watcher3.default(opts.computed[prop].bind(opts), cb ? cb.bind(opts) : undefined, true);
+
+      function createComputedGetter() {
+        var val = watcher.get();
+        if (_dep2.default.target) {
+          watcher.depend();
+        }
+        return val;
+      }
 
       Object.defineProperty(opts.data, prop, {
         enumerable: true,
         configurable: true,
         set: util.noop,
-        get: opts.computed[prop].bind(opts)
+        get: createComputedGetter
       });
+    };
+
+    for (var prop in opts.computed) {
+      _loop(prop);
     }
   }
 }
@@ -322,9 +334,9 @@ var Reh = function () {
       if (this._computedWatchers) {
         var props = Object.keys(this._computedWatchers);
         for (var i = 0, l = props.length; i < l; i++) {
-          var watcher = this._computedWatchers[props[i]];
-          if (watcher.dirty) {
-            watcher.forceUpdate();
+          var _watcher = this._computedWatchers[props[i]];
+          if (_watcher.dirty) {
+            _watcher.forceUpdate();
           }
         }
       }
@@ -406,7 +418,6 @@ function defineReactive(obj, key, val) {
   var childOb = (0, _observe2.default)(val);
   Object.defineProperty(obj, key, {
     get: function get() {
-      console.log(key, getter);
       var value = getter ? getter.call(obj) : val;
 
       /**
@@ -482,12 +493,13 @@ var Watcher = function () {
 
     this.getter = getter;
     this.cb = function (a, b) {
-      _this.dirty = false;
       if (cb) {
         cb(a, b);
       }
+      _this.dirty = false;
     };
     this.deps = {};
+    this.newDeps = {};
     this.id = $$watcher_count++;
     this.callUpdateManually = callUpdateManually;
     this.value = this.get();
@@ -529,14 +541,22 @@ var Watcher = function () {
   }, {
     key: 'cleanupDeps',
     value: function cleanupDeps() {
-      this.deps = {};
+      for (var id in this.deps) {
+        if (!this.newDeps[id]) {
+          this.deps[id].removeSub(this);
+        }
+      }
+      this.deps = this.newDeps;
+      this.newDeps = {};
     }
   }, {
     key: 'addDep',
     value: function addDep(dep) {
-      if (!this.deps[dep.id]) {
-        this.deps[dep.id] = dep;
-        dep.addSub(this);
+      if (!this.newDeps[dep.id]) {
+        this.newDeps[dep.id] = dep;
+        if (!this.deps[dep.id]) {
+          dep.addSub(this);
+        }
       }
     }
   }, {
