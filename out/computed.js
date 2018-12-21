@@ -103,7 +103,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-const Computed = __webpack_require__(/*! ../src */ "./src/index.js");
+const Computed = __webpack_require__(/*! ../src/computed */ "./src/computed.js");
 
 module.exports = Computed.default;
 
@@ -154,25 +154,41 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-function initData(opts) {
+function initData(self, opts) {
   if (util.isObject(opts) && util.isObject(opts.data)) {
-    for (var _prop in opts.data) {
-      (0, _observe2.default)(opts.data);
-    }
+    var data = self._data = opts.data;
+    (0, _observe2.default)(data);
+    proxy(self, data);
+  }
+}
+
+function proxy(self, obj) {
+  var _loop = function _loop(_prop) {
+    Object.defineProperty(self, _prop, {
+      configurable: true,
+      enumerable: true,
+      get: function get() {
+        return obj[_prop];
+      },
+      setter: function setter(newVal) {
+        obj[_prop] = newVal;
+      }
+    });
+  };
+
+  for (var _prop in obj) {
+    _loop(_prop);
   }
 }
 
 function initComputed(ctx, opts, cb) {
   if (util.isObject(opts) && util.isObject(opts.computed)) {
-    var _loop = function _loop(_prop2) {
-      if (!util.isObject(opts.data)) {
-        opts.data = {};
-      }
+    var _loop2 = function _loop2(_prop2) {
       if (!ctx._computedWatchers) {
         ctx._computedWatchers = {};
       }
 
-      var watcher = ctx._computedWatchers[_prop2] = new _watcher3.default(opts.computed[_prop2].bind(opts), cb ? cb.bind(opts, _prop2) : undefined, true);
+      var watcher = ctx._computedWatchers[_prop2] = new _watcher3.default(opts.computed[_prop2].bind(ctx), cb ? cb.bind(ctx, _prop2) : undefined, true);
 
       function createComputedGetter() {
         if (watcher.dirty) {
@@ -184,7 +200,7 @@ function initComputed(ctx, opts, cb) {
         return watcher.value;
       }
 
-      Object.defineProperty(opts.data, _prop2, {
+      Object.defineProperty(ctx, _prop2, {
         enumerable: true,
         configurable: true,
         set: util.noop,
@@ -193,7 +209,7 @@ function initComputed(ctx, opts, cb) {
     };
 
     for (var _prop2 in opts.computed) {
-      _loop(_prop2);
+      _loop2(_prop2);
     }
   }
 }
@@ -202,7 +218,7 @@ var Computed = function () {
   function Computed(opts, cb) {
     _classCallCheck(this, Computed);
 
-    initData(opts);
+    initData(this, opts);
     initComputed(this, opts, cb);
   }
 
@@ -308,63 +324,6 @@ function popStack() {
   targetStack.pop();
   Dep.target = targetStack[targetStack.length - 1];
 }
-
-/***/ }),
-
-/***/ "./src/index.js":
-/*!**********************!*\
-  !*** ./src/index.js ***!
-  \**********************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _computed = __webpack_require__(/*! ./computed */ "./src/computed.js");
-
-var _computed2 = _interopRequireDefault(_computed);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function ComputedPage(PageFunction) {
-  return function () {
-    var PageConfigObject = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-
-    var computed = void 0;
-    var onLoad = PageConfigObject.onLoad;
-    PageConfigObject.onLoad = function (opts) {
-      var _this = this;
-
-      computed = new _computed2.default(PageConfigObject);
-      var setData = this.setData.bind(this);
-      this.setData = function () {
-        var obj = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-        var cb = arguments[1];
-
-        setData(obj);
-        var computedData = computed.getComputed();
-        setData(computedData, function () {
-          for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-            args[_key] = arguments[_key];
-          }
-
-          if (cb) {
-            cb.call.apply(cb, [_this].concat(args));
-          }
-        });
-      };
-      onLoad.call(this, opts);
-    };
-    PageFunction(PageConfigObject);
-  };
-}
-
-exports.default = ComputedPage;
 
 /***/ }),
 
@@ -658,4 +617,4 @@ exports.default = Watcher;
 
 /******/ });
 });
-//# sourceMappingURL=wx-computed.js.map
+//# sourceMappingURL=computed.js.map

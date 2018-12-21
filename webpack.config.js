@@ -7,7 +7,7 @@ module.exports = env => {
     entry: resolve('lib/index'),
     mode: env && env.production ? 'production' : 'development',
     output: {
-      filename: 'wx-computed.js',
+      filename: 'computed.js',
       library: 'Computed',
       libraryTarget: 'umd',
       path: resolve('out')

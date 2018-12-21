@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>Document</title>
-    <script src="out/wx-computed.js"></script>
+    <script src="out/computed.js"></script>
     <script>
       const o = {
         data: {
@@ -17,33 +17,17 @@
         },
         computed: {
           foo() {
-            return this.data.a + this.data.b;
+            return this.a + this.b;
           },
           bar() {
             return '';
           },
           fooBar() {
-            return this.data.bar + this.data.foo;
+            return this.bar + this.foo;
           }
         }
       };
-      function Page(pageConfig) {
-        if (!(this instanceof Page)) {
-          return new Page(pageConfig);
-        }
-        this.setData = obj => {
-          for (let key in obj) {
-            this.data[key] = obj[key];
-            console.log('setData ' + key);
-          }
-        };
-        this.data = pageConfig.data;
-        if (pageConfig.onLoad) {
-          pageConfig.onLoad.call(this, { initOpts: 1 });
-        }
-      }
-
-      Computed(Page)(o);
+      const c = new Computed(o);
     </script>
   </head>
   <body></body>
