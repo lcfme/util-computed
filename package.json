@@ -1,9 +1,9 @@
 {
-  "name": "wx-computed",
+  "name": "util-computed",
   "author": {
     "name": "laearon"
   },
-  "main": "out/wx-computed.js",
+  "main": "out/computed.js",
   "scripts": {
     "build": "rm -rf out && webpack --progress"
   },
