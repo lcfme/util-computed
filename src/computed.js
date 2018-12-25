@@ -21,7 +21,7 @@ function proxy(self: Computed, obj: Object) {
       get() {
         return obj[prop];
       },
-      setter(newVal: any) {
+      set(newVal: any) {
         obj[prop] = newVal;
       }
     });

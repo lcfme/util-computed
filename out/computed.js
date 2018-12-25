@@ -170,7 +170,7 @@ function proxy(self, obj) {
       get: function get() {
         return obj[_prop];
       },
-      setter: function setter(newVal) {
+      set: function set(newVal) {
         obj[_prop] = newVal;
       }
     });
