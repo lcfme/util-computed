@@ -8,8 +8,8 @@ import Dep from './dep';
 function initData(self: Computed, opts: any) {
   if (util.isObject(opts) && util.isObject(opts.data)) {
     var data = (self._data = opts.data);
-    observe(data);
     proxy(self, data);
+    observe(data);
   }
 }
 

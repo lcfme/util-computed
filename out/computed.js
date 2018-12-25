@@ -157,8 +157,8 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 function initData(self, opts) {
   if (util.isObject(opts) && util.isObject(opts.data)) {
     var data = self._data = opts.data;
-    (0, _observe2.default)(data);
     proxy(self, data);
+    (0, _observe2.default)(data);
   }
 }
 
